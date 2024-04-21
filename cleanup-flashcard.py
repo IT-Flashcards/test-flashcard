@@ -1,17 +1,21 @@
 import psutil
 
-def kill_processes_by_name(name):
-    # Znajdowanie i zamykanie procesów o danej nazwie
-    for proc in psutil.process_iter():
-        if proc.name().lower() == name.lower():
-            proc.kill()
+def kill_process_by_pid(pid):
+    try:
+        proc = psutil.Process(pid)
+        proc.kill()
+        print(f"Zamknięto proces o PID {pid}.")
+    except (psutil.NoSuchProcess, psutil.AccessDenied) as e:
+        print(f"Nie udało się zamknąć procesu o PID {pid}: {e}")
 
-EDGE_PROCESS_NAME = "msedge.exe"
-TERMINAL_PROCESS_NAME = "WindowsTerminal.exe"
-VSCODE_PROCESS_NAME = "code.exe"
+def cleanup():
+    try:
+        with open("process_pids.txt", "r") as file:
+            pids = [int(line.strip()) for line in file.readlines()]
+        for pid in pids:
+            kill_process_by_pid(pid)
+    except FileNotFoundError:
+        print("Nie znaleziono pliku z PID.")
 
-kill_processes_by_name(EDGE_PROCESS_NAME)
-kill_processes_by_name(TERMINAL_PROCESS_NAME)
-kill_processes_by_name(VSCODE_PROCESS_NAME)
+cleanup()
 
-print("Zamknięto Microsoft Edge, Terminal oraz Visual Studio Code.")
